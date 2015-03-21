@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Space</title>
+        <style type="text/css">
+            @import url('css/style.css');
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="js/graphics.js"></script>
+        <script src="js/game.js"></script>
+        <script src="js/main.js"></script>
+    </head>
+
+    <body>
+        <img class="stars" src="assets/images/starfield-1.png" />
+
+        <canvas class="star-bg prerender" width="500" height="500"></canvas>
+        <canvas class="system-fg prerender"></canvas>
+
+        <canvas class="star-bg" width="500" height="500"></canvas>
+        <canvas class="system-fg"></canvas>
+
+        <div class="ui-overlay"></div>
+    </body>
+</html>
