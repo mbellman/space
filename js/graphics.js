@@ -65,10 +65,6 @@ var Render = function(label, context, destination, width, height) {
 
         for(var y = 0 ; y < height ; y++) {
             for(var x = 0 ; x < width ; x++) {
-                if(imageData.data[(x + y * height) * 4 + 3] == 0) {
-                    //continue;
-                }
-
                 var transform = this.pointDisplace[filterType](x, y);
 
                 var ax = Math.floor(transform.x);
@@ -78,7 +74,7 @@ var Render = function(label, context, destination, width, height) {
                 var dy = transform.y - ax;
 
                 for(var c = 0 ; c < 4 ; c++) {
-                    imageDataT.data[(x + y * height) * 4 + c] = imageData.data[(ax + ay * height) * 4 + c];
+                    imageDataT.data[(x + y * width) * 4 + c] = imageData.data[(ax + ay * width) * 4 + c];
                 }
             }
         }
@@ -118,6 +114,6 @@ function initRenderLoop() {
 
     starBG.render({
         filter: 'pincushion',
-        update: 1000 / 60
+        update: 20
     });
 }
