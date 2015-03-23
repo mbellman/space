@@ -1,42 +1,42 @@
-var Render = function(label, context, destination, width, height) {
-    this.lbl = label;
-    this.ctx  = context;
-    this.dest = destination;
-    this.w    = width;
-    this.h    = height;
+var _stars;
+var _system;
+
+var Render = function(label, source, destination, width, height, filter) {
+    this.lbl    = label;
+    this.srce   = source;
+    this.dest   = destination;
+    this.w      = width;
+    this.h      = height;
+    this.mapped = false;
+    this.locked = false;
+
+    var hW = width / 2;
+    var hH = height / 2;
+
+    var map = [];
 
     this.pointDisplace = {
         pincushion: function(px, py) {
-            var x = (px-width/2) / 1.5;
-            var y = (py-height/2) / 1.5;
-            var r = Math.sqrt(x*x+y*y);
-            var maxr = width / 2;
-            if (r>maxr) return {'x':px,'y':py}
-            var a = Math.atan2(y,x);
-            var k = (r/maxr)*(r/maxr)*0.5+0.5;
-            var dx = Math.cos(a)*r/k;
-            var dy = Math.sin(a)*r/k;
-            return {
-                'x': dx * 1 + width/2,
-                'y': dy * 1 + height/2
+            var x = (px - hW) / 1.2;
+            var y = (py - hH) / 1.2;
+            var r = Math.sqrt(x*x + y*y);
+            var maxr = hW;
+
+            if (r > maxr) {
+                return {
+                    'x': px,
+                    'y': py
+                }
             }
-        },
-        twirl: function(px, py) {
-            var x = px-width/2;
-            var y = py-height/2;
-            var r = Math.sqrt(x*x+y*y);
-            var maxr = width/2;
-            if (r>maxr) return {
-                'x':px,
-                'y':py
-            }
-            var a = Math.atan2(y,x);
-            a += 1-r/maxr;
-            var dx = Math.cos(a)*r;
-            var dy = Math.sin(a)*r;
+
+            var a = Math.atan2(y, x);
+            var k = (r/maxr) * (r/maxr) * 0.5 + 0.5;
+            var dx = Math.cos(a) * r/k;
+            var dy = Math.sin(a) * r/k;
+
             return {
-                'x': dx+width/2,
-                'y': dy+height/2
+                'x': dx + hW,
+                'y': dy + hH
             }
         },
         none: function(px, py) {
@@ -47,73 +47,92 @@ var Render = function(label, context, destination, width, height) {
         }
     }
 
-    this.filter = function(filterType) {
-        if(!this.pointDisplace.hasOwnProperty(filterType)) {
-            console.error('Invalid filter ' + filterType.toUpperCase() + ' applied for render object ' + this.lbl);
+    this.render = function() {
+        if(!this.mapped || this.locked) {
+            return;
         }
 
-        var imageData = this.ctx.getImageData(0, 0, width, height);
-        var imageDataT = this.ctx.createImageData(width, height);
+        this.locked = true;
 
-        var colorat = function(x, y, channel) {
-            return imageData.data[(x + y * height) * 4 + channel];
-        }
-
-        var bilinearFilter = function(x, y, dx, dy, c) {
-            return (colorat(x,y,c)*(1 - dx) + colorat(x+1,y,c)*dx) * (1-dy) + (colorat(x,y+1,c)*(1-dx) + colorat(x+1,y+1,c)*dx)*dy;
-        }
+        var imageData = this.srce.getImageData(0, 0, width, height);
+        var imageDataT = this.srce.createImageData(width, height);
 
         for(var y = 0 ; y < height ; y++) {
+            var rowCycle = y * width;
+
+            if(y < hH / 2 || y > hH * 1.5) {
+                continue;
+            }
+
             for(var x = 0 ; x < width ; x++) {
-                var transform = this.pointDisplace[filterType](x, y);
+                if(x < hW / 3 || x > hW * 1.66) {
+                    continue;
+                }
 
-                var ax = Math.floor(transform.x);
-                var ay = Math.floor(transform.y);
+                var dataPos = (x + rowCycle) * 4;
 
-                var dx = transform.x - ax;
-                var dy = transform.y - ax;
+                var ax = map[y][x][0];
+                var ay = map[y][x][1];
+
+                var adjDataPos = (ax + ay * width) * 4;
 
                 for(var c = 0 ; c < 4 ; c++) {
-                    imageDataT.data[(x + y * width) * 4 + c] = imageData.data[(ax + ay * width) * 4 + c];
+                    imageDataT.data[dataPos + c] = imageData.data[adjDataPos + c];
                 }
             }
         }
 
         this.dest.clearRect(0, 0, width, height);
         this.dest.putImageData(imageDataT, 0, 0, 0, 0, width, height);
+
+        this.locked = false;
     }
 
-    this.render = function(arguments) {
-        for(key in arguments) {
-            if(!arguments.hasOwnProperty(key)) {
-                continue;
-            }
+    this.createMap = function() {
+        if(!this.pointDisplace.hasOwnProperty(filter)) {
+            console.error('Invalid filter ' + filter.toUpperCase() + ' applied for render object ' + this.lbl);
+            filter = 'none';
+        }
 
-            switch(key) {
-                case 'filter':
-                    this.filter(arguments[key]);
-                    break;
-                case 'update':
-                    // Set infinite render interval in ms
-                    var obj = this;
-                    var args = arguments;
+        for(var y = 0 ; y < height ; y++) {
+            map[y] = [];
 
-                    setTimeout(function(){
-                        obj.render(args);
-                    }, arguments[key]);
-                    break;
-                default:
-                    break;
+            for(var x = 0 ; x < width ; x++) {
+                var transform = this.pointDisplace[filter](x, y);
+
+                var ax = Math.floor(transform.x);
+                var ay = Math.floor(transform.y);
+
+                map[y][x] = [ax, ay];
             }
+        }
+
+        this.mapped = true;
+    }
+
+    this.createMap();
+}
+
+function updateFlatStarBG() {
+    DOM.stars.prerender.ctx.clearRect(0, 0, 600, 600);
+
+    var canvasRatio = 600 / 360;
+    var angleRatio = 4;
+
+    var xDist = Math.floor(game.ship.azimuth[1] * canvasRatio * angleRatio);
+    var yDist = Math.floor(game.ship.altitude[1] * canvasRatio * angleRatio);
+
+    for(var i = 0 ; i < 2 ; i++) {
+        for(var j = 0 ; j < 2 ; j++) {
+            DOM.stars.prerender.ctx.drawImage(DOM.starsImg,
+                (xDist % 600 - (1 - i) * 600),
+                (yDist % 600 - (1 - j) * 600),
+            600, 600);
         }
     }
 }
 
-function initRenderLoop() {
-    var starBG = new Render('starBG', DOM.stars.prerender.ctx, DOM.stars.main.ctx, 500, 500);
-
-    starBG.render({
-        filter: 'pincushion',
-        update: 20
-    });
+function rerender() {
+    updateFlatStarBG();
+    _stars.render();
 }

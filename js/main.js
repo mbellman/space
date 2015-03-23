@@ -1,6 +1,18 @@
 // ---------------------------------------
 // -------------- Variables --------------
 
+var mouse = {
+    x: 0,
+    y: 0
+}
+
+var keys = {
+    UP: false,
+    RIGHT: false,
+    DOWN: false,
+    LEFT: false
+}
+
 
 // ---------------------------------------
 // -------------- Handlers ---------------
@@ -39,21 +51,28 @@ function cacheDOM() {
 $(document).ready(function(){
     cacheDOM();
 
-    initRenderLoop();
+    _stars = new Render('starBG', DOM.stars.prerender.ctx, DOM.stars.main.ctx, 600, 600, 'pincushion');
 
-    $(window).mousemove(function(e){
+    $(window).keydown(function(e){
+        if(e.which == 37) { keys.LEFT  = true; }
+        if(e.which == 38) { keys.UP    = true; }
+        if(e.which == 39) { keys.RIGHT = true; }
+        if(e.which == 40) { keys.DOWN  = true; }
 
-        DOM.stars.prerender.ctx.clearRect(0, 0, 500, 500);
-
-        var ratio = 500 / DOM.stars.main.canvas.width();
-
-        var originX = Math.floor(e.clientX * ratio) % 500;
-        var originY = Math.floor(e.clientY * ratio) % 500;
-
-        for(var i = 0 ; i < 2 ; i++) {
-            for(var j = 0 ; j < 2 ; j++) {
-                DOM.stars.prerender.ctx.drawImage(DOM.starsImg, originX - ((1 - i) * 500), originY - ((1-j) * 500), 500, 500);
-            }
-        }
+        e.preventDefault();
+        return false;
     });
+
+    $(window).keyup(function(e){
+        if(e.which == 37) { keys.LEFT  = false; }
+        if(e.which == 38) { keys.UP    = false; }
+        if(e.which == 39) { keys.RIGHT = false; }
+        if(e.which == 40) { keys.DOWN  = false; }
+
+        e.preventDefault();
+        return false;
+    });
+
+    game = new Game();
+    game.loop = setInterval(main, 1000 / 60);
 });
