@@ -1,5 +1,4 @@
-var _stars;
-var _system;
+var _scene;
 
 var Render = function(label, source, destination, width, height, filter) {
     this.lbl    = label;
@@ -114,7 +113,7 @@ var Render = function(label, source, destination, width, height, filter) {
 }
 
 function updateFlatStarBG() {
-    DOM.stars.prerender.ctx.clearRect(0, 0, 600, 600);
+    DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
     var canvasRatio = 600 / 360;
     var angleRatio = 4;
@@ -124,14 +123,14 @@ function updateFlatStarBG() {
 
     for(var i = 0 ; i < 2 ; i++) {
         for(var j = 0 ; j < 2 ; j++) {
-            DOM.stars.prerender.ctx.drawImage(DOM.starsImg,
+            DOM.prerender.ctx.drawImage(DOM.starsImg,
                 (xDist % 600 - (1 - i) * 600),
                 (yDist % 600 - (1 - j) * 600),
             600, 600);
         }
     }
 
-    DOM.stars.main.canvas.css({
+    DOM.scene.canvas.css({
         '-moz-transform'    : 'rotate(' + game.ship.roll[1] + 'deg)',
         '-webkit-transform' : 'rotate(' + game.ship.roll[1] + 'deg)',
         'transform'         : 'rotate(' + game.ship.roll[1] + 'deg)'
@@ -140,5 +139,5 @@ function updateFlatStarBG() {
 
 function rerender() {
     updateFlatStarBG();
-    _stars.render();
+    _scene.render();
 }

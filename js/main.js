@@ -29,33 +29,21 @@ var DOM = {};
 function cacheDOM() {
     DOM.starsImg = $('.stars')[0];
 
-    DOM.stars = {
-        prerender: {
-            canvas: $('.star-bg.prerender'),
-            ctx: $('.star-bg.prerender')[0].getContext('2d')
-        },
-        main: {
-            canvas: $('.star-bg:not(.prerender)'),
-            ctx: $('.star-bg:not(.prerender)')[0].getContext('2d')
-        }
+    DOM.prerender = {
+        canvas: $('.scene.prerender'),
+        ctx:    $('.scene.prerender')[0].getContext('2d')
     }
 
-    DOM.system = {
-        prerender: {
-            canvas: $('.system-fg.prerender'),
-            ctx: $('.system-fg.prerender')[0].getContext('2d'),
-        },
-        main: {
-            canvas: $('.system-fg:not(.prerender)'),
-            ctx: $('.system-fg:not(.prerender)')[0].getContext('2d'),
-        }
+    DOM.scene = {
+        canvas: $('.scene:not(.prerender)'),
+        ctx:    $('.scene:not(.prerender)')[0].getContext('2d')
     }
 }
 
 $(document).ready(function(){
     cacheDOM();
 
-    _stars = new Render('starBG', DOM.stars.prerender.ctx, DOM.stars.main.ctx, 600, 600, 'pincushion');
+    _scene = new Render('starBG', DOM.prerender.ctx, DOM.scene.ctx, 600, 600, 'pincushion');
 
     $(window).keydown(function(e){
         if(e.which == 37) { keys.LEFT  = true; }
