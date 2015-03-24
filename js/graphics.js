@@ -25,12 +25,14 @@ var Render = function(label, source, destination, width, height, filter) {
             var r = Math.sqrt(x*x + y*y);
             var maxr = hW;
 
+            /*
             if (r > maxr) {
                 return {
                     'x': px,
                     'y': py
                 }
             }
+            */
 
             var a = Math.atan2(y, x);
             var k = (r/maxr) * (r/maxr) * 0.5 + 0.5;
@@ -59,6 +61,10 @@ var Render = function(label, source, destination, width, height, filter) {
 
         var imageData = this.srce.getImageData(0, 0, width, height);
         var imageDataT = this.srce.createImageData(width, height);
+
+        function colorat(x, y, channel) {
+            return imageData.data[(x + y * height) * 4 + channel];
+        }
 
         for(var y = 0 ; y < height ; y++) {
             var rowCycle = y * width;
@@ -116,61 +122,14 @@ var Render = function(label, source, destination, width, height, filter) {
     this.createMap();
 }
 
-function planetCoords(planetObj) {
-    var largerAz  = (game.ship.azimuth[1] > planetObj.azimuth ? game.ship.azimuth[1] : planetObj.azimuth);
-    var smallerAz = (game.ship.azimuth[1] > planetObj.azimuth ? planetObj.azimuth : game.ship.azimuth[1]);
-    var largerAl  = (game.ship.altitude[1] > planetObj.altitude ? game.ship.altitude[1] : planetObj.altitude);
-    var smallerAl = (game.ship.altitude[1] > planetObj.altitude ? planetObj.altitude : game.ship.altitude[1]);
-
-    var dx = largerAz - smallerAz;
-    var dxN = (360 - largerAz) + smallerAz;
-    var dy = largerAl - smallerAl;
-    var dyN = (360 - largerAl) + smallerAl;
-
-    var dAz = dx > dxN ? dxN : dx;
-    var dAl = dy > dyN ? dyN : dy;
-
-    var multiplier = 1;
-
-    if(Math.abs(game.ship.azimuth[1] - planetObj.azimuth) > ((360 - largerAz) + smallerAz)) {
-        if(game.ship.azimuth[1] > planetObj.azimuth) {
-            multiplier = -1;
-        } else {
-            multiplier = 1;
-        }
-    } else {
-        if(game.ship.azimuth[1] > planetObj.azimuth) {
-            multiplier = 1;
-        } else {
-            multiplier = -1;
-        }
-    }
-
-    var xC = dAz * canvasRatio * angleRatio * multiplier;
-
-    if(Math.abs(game.ship.altitude[1] - planetObj.altitude) > ((360 - largerAl) + smallerAl)) {
-        if(game.ship.altitude[1] > planetObj.altitude) {
-            multiplier = -1;
-        } else {
-            multiplier = 1;
-        }
-    } else {
-        if(game.ship.altitude[1] > planetObj.altitude) {
-            multiplier = 1;
-        } else {
-            multiplier = -1;
-        }
-    }
-
-    var yC = dAl * canvasRatio * angleRatio * multiplier;
-
-    return {
-        x: xC,
-        y: yC
-    }
+function ctxSetShadow(ctx, color, blur) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
 }
 
-function updateFlatStarBG() {
+function projectStarBG() {
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
     var xDist = Math.floor(game.ship.azimuth[1] * canvasRatio * angleRatio);
@@ -193,20 +152,54 @@ function updateFlatStarBG() {
 }
 
 function projectPlanets() {
+    var shipAz   = game.ship.azimuth[1];
+    var shipAlt  = game.ship.altitude[1];
+
+    var azRange  = [JS_mod((game.ship.azimuth[1] - fov / 2), 360), JS_mod((game.ship.azimuth[1] + fov / 2), 360)];
+    var altRange = [JS_mod((game.ship.altitude[1] - fov / 2), 360), JS_mod((game.ship.altitude[1] + fov / 2), 360)];
+
+    var azStart  = azRange[0];
+    var altStart = altRange[0];
+
+    azRange[0]  += (360 - azStart);
+    azRange[1]  += (360 - azStart);
+
+    altRange[0] += (360 - altStart);
+    altRange[1] += (360 - altStart);
+
+    azRange[0]   %= 360;
+    azRange[1]   %= 360;
+    altRange[0]  %= 360;
+    altRange[1]  %= 360;
+
     for(var p = 0 ; p < planetSystem.planetCount ; p++) {
         var planet = planetSystem.planets[p];
 
-        var coords = planetCoords(planet);
+        var pAzNorm  = (planet.azimuth + (360 - azStart)) % 360;
+        var pAltNorm = (planet.altitude + (360 - altStart)) % 360;
 
-        DOM.prerender.ctx.beginPath();
-        DOM.prerender.ctx.arc(300 + coords.x, 300 + coords.y, 50, 0, 2 * Math.PI, false);
-        DOM.prerender.ctx.fillStyle = planet.color;
-        DOM.prerender.ctx.fill();
+        var pAzNorm180  = (JS_mod(180 - planet.azimuth, 360) + (360 - azStart)) % 360;
+        var pAltNorm180 = (JS_mod(180 - planet.altitude, 360) + (360 - altStart)) % 360;
+
+        if(pAzNorm < fov) {
+            DOM.prerender.ctx.beginPath();
+            DOM.prerender.ctx.arc(600 - pAzNorm * 600 / fov, 600 - pAltNorm * 600 / fov, 50, 0, 2 * Math.PI, false);
+            DOM.prerender.ctx.fillStyle = planet.color;
+            DOM.prerender.ctx.fill();
+        }
+        else if (pAzNorm180 < fov) {
+            DOM.prerender.ctx.beginPath();
+            DOM.prerender.ctx.arc(600 - pAzNorm180 * 600 / fov, 600 - pAltNorm180 * 600 / fov, 50, 0, 2 * Math.PI, false);
+            DOM.prerender.ctx.fillStyle = planet.color;
+            DOM.prerender.ctx.fill();
+        }
     }
 }
 
 function rerender() {
-    updateFlatStarBG();
+    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
+
+    projectStarBG();
     projectPlanets();
 
     _scene.render();

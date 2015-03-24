@@ -36,6 +36,18 @@ img {
     height: 100%;
 }
 
+/*
+.prerender {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 500px;
+    height: 500px;
+    z-index: 10;
+}
+*/
+
 .console {
 position:absolute;
 top:0;

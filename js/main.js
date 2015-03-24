@@ -17,6 +17,7 @@ var keys = {
     D: false
 }
 
+var degToRad = Math.PI / 180;
 
 // ---------------------------------------
 // -------------- Handlers ---------------
@@ -46,28 +47,28 @@ $(document).ready(function(){
     _scene = new Render('starBG', DOM.prerender.ctx, DOM.scene.ctx, 600, 600, 'pincushion');
 
     $(window).keydown(function(e){
-        if(e.which == 37) { keys.LEFT  = true; }
-        if(e.which == 38) { keys.UP    = true; }
-        if(e.which == 39) { keys.RIGHT = true; }
-        if(e.which == 40) { keys.DOWN  = true; }
-        if(e.which == 87) { keys.W     = true; }
-        if(e.which == 65) { keys.A     = true; }
-        if(e.which == 83) { keys.S     = true; }
-        if(e.which == 68) { keys.D     = true; }
+        if(e.which == 37) keys.LEFT  = true;
+        if(e.which == 38) keys.UP    = true;
+        if(e.which == 39) keys.RIGHT = true;
+        if(e.which == 40) keys.DOWN  = true;
+        if(e.which == 87) keys.W     = true;
+        if(e.which == 65) keys.A     = true;
+        if(e.which == 83) keys.S     = true;
+        if(e.which == 68) keys.D     = true;
 
         e.preventDefault();
         return false;
     });
 
     $(window).keyup(function(e){
-        if(e.which == 37) { keys.LEFT  = false; }
-        if(e.which == 38) { keys.UP    = false; }
-        if(e.which == 39) { keys.RIGHT = false; }
-        if(e.which == 40) { keys.DOWN  = false; }
-        if(e.which == 87) { keys.W     = false; }
-        if(e.which == 65) { keys.A     = false; }
-        if(e.which == 83) { keys.S     = false; }
-        if(e.which == 68) { keys.D     = false; }
+        if(e.which == 37) keys.LEFT  = false;
+        if(e.which == 38) keys.UP    = false;
+        if(e.which == 39) keys.RIGHT = false;
+        if(e.which == 40) keys.DOWN  = false;
+        if(e.which == 87) keys.W     = false;
+        if(e.which == 65) keys.A     = false; 
+        if(e.which == 83) keys.S     = false;
+        if(e.which == 68) keys.D     = false;
 
         e.preventDefault();
         return false;
