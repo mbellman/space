@@ -1,4 +1,5 @@
 var game;
+var planetSystem;
 
 var Game = function() {
     this.loop;
@@ -17,6 +18,33 @@ var Game = function() {
         acceleration: 0,
         velocity: 0
     }
+}
+
+var PlanetarySystem = function() {
+    this.planets = [
+        {
+            azimuth: 10,
+            altitude: 10,
+            color: '#A00'
+        },
+        {
+            azimuth: 20,
+            altitude: 20,
+            color: '#A00'
+        },
+        {
+            azimuth: 30,
+            altitude: 30,
+            color: '#A00'
+        },
+        {
+            azimuth: 40,
+            altitude: 40,
+            color: '#A00'
+        }
+    ];
+
+    this.planetCount = 4;
 }
 
 function updateOrientation() {

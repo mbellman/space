@@ -1,4 +1,8 @@
 var _scene;
+var fov = 90;
+
+var canvasRatio = 600 / 360;
+var angleRatio = 4;
 
 var Render = function(label, source, destination, width, height, filter) {
     this.lbl    = label;
@@ -64,7 +68,7 @@ var Render = function(label, source, destination, width, height, filter) {
             }
 
             for(var x = 0 ; x < width ; x++) {
-                if(x < hW / 3 || x > hW * 1.66) {
+                if(x < hW / 2 || x > hW * 1.5) {
                     continue;
                 }
 
@@ -112,11 +116,19 @@ var Render = function(label, source, destination, width, height, filter) {
     this.createMap();
 }
 
+function planetCoords(planetObj) {
+    return {
+        /*
+        x: (300 - (planetObj.azimuth * canvasRatio * angleRatio) + (game.ship.azimuth[1] * canvasRatio * angleRatio)) - 1200,
+        y: (300 - (planetObj.altitude * canvasRatio * angleRatio) + (game.ship.altitude[1] * canvasRatio * angleRatio)) - 1200
+        */
+        x: 300 - ((planetObj.azimuth - game.ship.azimuth[1]) * canvasRatio * angleRatio),
+        y: 300 - ((planetObj.altitude - game.ship.altitude[1]) * canvasRatio * angleRatio)
+    }
+}
+
 function updateFlatStarBG() {
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
-
-    var canvasRatio = 600 / 360;
-    var angleRatio = 4;
 
     var xDist = Math.floor(game.ship.azimuth[1] * canvasRatio * angleRatio);
     var yDist = Math.floor(game.ship.altitude[1] * canvasRatio * angleRatio);
@@ -137,7 +149,24 @@ function updateFlatStarBG() {
     });
 }
 
+function projectPlanets() {
+    var azimuthNormalization = game.ship.azimuth[1];
+    for(var p = 0 ; p < planetSystem.planetCount ; p++) {
+        var planet = planetSystem.planets[p];
+        var coords = planetCoords(planet);
+
+        DOM.prerender.ctx.beginPath();
+
+        DOM.prerender.ctx.arc(coords.x, coords.y, 50, 0, 2 * Math.PI, false);
+
+        DOM.prerender.ctx.fillStyle = planet.color;
+        DOM.prerender.ctx.fill();
+    }
+}
+
 function rerender() {
     updateFlatStarBG();
+    projectPlanets();
+
     _scene.render();
 }

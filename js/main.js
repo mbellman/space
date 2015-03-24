@@ -73,6 +73,8 @@ $(document).ready(function(){
         return false;
     });
 
-    game = new Game();
+    game         = new Game();
+    planetSystem = new PlanetarySystem();
+    
     game.loop = setInterval(main, 1000 / 60);
 });
