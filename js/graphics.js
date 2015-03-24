@@ -130,6 +130,12 @@ function updateFlatStarBG() {
             600, 600);
         }
     }
+
+    DOM.stars.main.canvas.css({
+        '-moz-transform'    : 'rotate(' + game.ship.roll[1] + 'deg)',
+        '-webkit-transform' : 'rotate(' + game.ship.roll[1] + 'deg)',
+        'transform'         : 'rotate(' + game.ship.roll[1] + 'deg)'
+    });
 }
 
 function rerender() {

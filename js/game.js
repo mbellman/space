@@ -9,7 +9,7 @@ var Game = function() {
         z: 0,
         azimuth: [0, 0],
         altitude: [0, 0],
-        roll: 0,
+        roll: [0, 0],
 
         oAcceleration: 0.025,    // Orientation acceleration (orientation thruster power)
         mAcceleration: 0.025,    // Movement acceleration (main thruster power)
@@ -20,20 +20,31 @@ var Game = function() {
 }
 
 function updateOrientation() {
+    if(keys.A) { game.ship.roll[0] += game.ship.oAcceleration; }
+    if(keys.D) { game.ship.roll[0] -= game.ship.oAcceleration; }
+
+    var mapFactor = Math.PI / 180;
+    var cosRoll   = Math.cos(mapFactor * game.ship.roll[1]);
+    var sinRoll   = Math.sin(mapFactor * game.ship.roll[1]);
+
     if(keys.UP) {
-        game.ship.altitude[0] += game.ship.oAcceleration;
+        game.ship.altitude[0] += game.ship.oAcceleration * cosRoll;
+        game.ship.azimuth[0]  += game.ship.oAcceleration * sinRoll;
     }
 
     if(keys.DOWN) {
-        game.ship.altitude[0] -= game.ship.oAcceleration;
+        game.ship.altitude[0] -= game.ship.oAcceleration * cosRoll;
+        game.ship.azimuth[0]  -= game.ship.oAcceleration * sinRoll;
     }
 
     if(keys.LEFT) {
-        game.ship.azimuth[0] += game.ship.oAcceleration;
+        game.ship.azimuth[0]  += game.ship.oAcceleration * cosRoll;
+        game.ship.altitude[0] -= game.ship.oAcceleration * sinRoll;
     }
 
     if(keys.RIGHT) {
-        game.ship.azimuth[0] -= game.ship.oAcceleration;
+        game.ship.azimuth[0]  -= game.ship.oAcceleration * cosRoll;
+        game.ship.altitude[0] += game.ship.oAcceleration * sinRoll;
     }
 
     game.ship.azimuth[1]  += game.ship.azimuth[0];

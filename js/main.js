@@ -10,7 +10,11 @@ var keys = {
     UP: false,
     RIGHT: false,
     DOWN: false,
-    LEFT: false
+    LEFT: false,
+    W: false,
+    A: false,
+    S: false,
+    D: false
 }
 
 
@@ -58,6 +62,10 @@ $(document).ready(function(){
         if(e.which == 38) { keys.UP    = true; }
         if(e.which == 39) { keys.RIGHT = true; }
         if(e.which == 40) { keys.DOWN  = true; }
+        if(e.which == 87) { keys.W     = true; }
+        if(e.which == 65) { keys.A     = true; }
+        if(e.which == 83) { keys.S     = true; }
+        if(e.which == 68) { keys.D     = true; }
 
         e.preventDefault();
         return false;
@@ -68,6 +76,10 @@ $(document).ready(function(){
         if(e.which == 38) { keys.UP    = false; }
         if(e.which == 39) { keys.RIGHT = false; }
         if(e.which == 40) { keys.DOWN  = false; }
+        if(e.which == 87) { keys.W     = false; }
+        if(e.which == 65) { keys.A     = false; }
+        if(e.which == 83) { keys.S     = false; }
+        if(e.which == 68) { keys.D     = false; }
 
         e.preventDefault();
         return false;
