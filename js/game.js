@@ -25,23 +25,23 @@ var Game = function() {
 var PlanetarySystem = function() {
     this.planets = [
         {
-            azimuth: 10,
-            altitude: 10,
+            azimuth: 70,
+            altitude: 70,
             color: '#0A0'
         },
         {
-            azimuth: 30,
-            altitude: 30,
+            azimuth: 80,
+            altitude: 80,
             color: '#F00'
         },
         {
             azimuth: 60,
             altitude: 60,
-            color: '#0AF'
+            color: '#FFF'
         },
         {
-            azimuth: 150,
-            altitude: 100,
+            azimuth: 85,
+            altitude: 85,
             color: '#F0F'
         }
     ];

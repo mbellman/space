@@ -70,12 +70,12 @@ var Render = function(label, source, destination, width, height, filter) {
             var rowCycle = y * width;
 
             if(y < hH / 2 || y > hH * 1.5) {
-                continue;
+                //continue;
             }
 
             for(var x = 0 ; x < width ; x++) {
                 if(x < hW / 2 || x > hW * 1.5) {
-                    continue;
+                    //continue;
                 }
 
                 var dataPos = (x + rowCycle) * 4;
@@ -172,6 +172,8 @@ function projectPlanets() {
     altRange[0]  %= 360;
     altRange[1]  %= 360;
 
+    $('.console').html(shipAz + '<br />' + shipAlt);
+
     for(var p = 0 ; p < planetSystem.planetCount ; p++) {
         var planet = planetSystem.planets[p];
 
@@ -181,18 +183,22 @@ function projectPlanets() {
         var pAzNorm180  = (JS_mod(180 - planet.azimuth, 360) + (360 - azStart)) % 360;
         var pAltNorm180 = (JS_mod(180 - planet.altitude, 360) + (360 - altStart)) % 360;
 
-        if(pAzNorm < fov) {
+        var adjRadius = 50 * fov / 600;
+
+        //if(p == 0) $('.console').html((pAzNorm + adjRadius) % 360 + '<br />' + (fov + adjRadius * 2));
+
+        //if(((pAzNorm + adjRadius) % 360) < (fov + adjRadius * 2) && ((pAltNorm + adjRadius) % 360) < (fov + adjRadius * 2)) {
             DOM.prerender.ctx.beginPath();
             DOM.prerender.ctx.arc(600 - pAzNorm * 600 / fov, 600 - pAltNorm * 600 / fov, 50, 0, 2 * Math.PI, false);
             DOM.prerender.ctx.fillStyle = planet.color;
             DOM.prerender.ctx.fill();
-        }
-        else if (pAzNorm180 < fov) {
+        //}
+        //else if (pAzNorm180 < fov + 50 * fov / 600 || 360 - pAzNorm180 < 50 * fov / 600) {
             DOM.prerender.ctx.beginPath();
             DOM.prerender.ctx.arc(600 - pAzNorm180 * 600 / fov, 600 - pAltNorm180 * 600 / fov, 50, 0, 2 * Math.PI, false);
             DOM.prerender.ctx.fillStyle = planet.color;
             DOM.prerender.ctx.fill();
-        }
+        //}
     }
 }
 

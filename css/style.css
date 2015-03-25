@@ -36,21 +36,20 @@ img {
     height: 100%;
 }
 
-/*
 .prerender {
     position: absolute;
     display: block;
     top: 0;
     left: 0;
-    width: 500px;
-    height: 500px;
+    width: 200px;
+    height: 200px;
     z-index: 10;
 }
-*/
 
 .console {
 position:absolute;
 top:0;
 left:0;
 color:#FFF;
+z-index: 100;
 }
