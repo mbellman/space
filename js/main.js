@@ -76,6 +76,7 @@ $(document).ready(function(){
 
     game         = new Game();
     planetSystem = new PlanetarySystem();
+    planetSystem.generate();
     
     game.loop = setInterval(main, 1000 / 60);
 });

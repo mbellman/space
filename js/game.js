@@ -23,30 +23,19 @@ var Game = function() {
 }
 
 var PlanetarySystem = function() {
-    this.planets = [
-        {
-            azimuth: 70,
-            altitude: 70,
-            color: '#0A0'
-        },
-        {
-            azimuth: 80,
-            altitude: 80,
-            color: '#F00'
-        },
-        {
-            azimuth: 60,
-            altitude: 60,
-            color: '#FFF'
-        },
-        {
-            azimuth: 85,
-            altitude: 85,
-            color: '#F0F'
-        }
-    ];
+    this.planets = [];
 
-    this.planetCount = 4;
+    this.generate = function() {
+        for(var lat = 0 ; lat < 10 ; lat++) {
+            for(var lon = 0 ; lon < 10 ; lon++) {
+                this.planets.push({
+                    azimuth: lat * 18,
+                    altitude: lon * 18,
+                    color: '#F00'
+                });
+            }
+        }
+    }
 }
 
 function checkOrientationAcceleration() {
@@ -119,6 +108,4 @@ function updateMovement() {
 function main() {
     updateOrientation();
     rerender();
-
-    //$('.console').html('Altitude: ' + game.ship.altitude[1] + '<br />Azimuth: ' + game.ship.azimuth[1]);
 }
