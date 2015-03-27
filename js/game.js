@@ -26,12 +26,14 @@ var PlanetarySystem = function() {
     this.planets = [];
 
     this.generate = function() {
+        var c = ['#500', '#600', '#700', '#800', '#900', '#A00', '#B00', '#C00', '#D00', '#E00'];
+
         for(var lat = 0 ; lat < 10 ; lat++) {
             for(var lon = 0 ; lon < 10 ; lon++) {
                 this.planets.push({
-                    azimuth: lat * 18,
-                    altitude: lon * 18,
-                    color: '#F00'
+                    azimuth: lon * 36,
+                    altitude: (270 + (lat * 18)) % 360,
+                    color: c[lat]
                 });
             }
         }

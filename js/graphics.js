@@ -171,38 +171,43 @@ function projectStarBG() {
 }
 
 function projectPlanets() {
+    var infoStr = '';
+
     for(var p = 0, planetCount = planetSystem.planets.length ; p < planetCount ; p++) {
         var planet = planetSystem.planets[p];
 
-        var pAz  = planet.azimuth;
-        //var pAlt = JS_mod(planet.altitude - 180, 360);
         var pAlt = planet.altitude;
+        var pAz  = planet.azimuth;
 
-        var apparentAzimuth = JS_mod((game.ship.azimuth[1] - pAz), 360);
-        var apparentAltitude = JS_mod((game.ship.altitude[1] - pAlt), 360);
+        var apparentAzimuth = JS_mod(pAz - game.ship.azimuth[1], 360);
+        var apparentAltitude = JS_mod(pAlt - game.ship.altitude[1], 360);
+
+        infoStr += Math.round(apparentAzimuth) + ' - ' + Math.round(apparentAltitude) + '<br />';
 
         var x = Math.sin(apparentAzimuth * degToRad) * Math.cos(apparentAltitude * degToRad);
         var y = Math.sin(apparentAltitude * degToRad);
-        var z = -Math.cos(apparentAzimuth * degToRad) * Math.cos(apparentAltitude * degToRad);
-
+        var z = Math.cos(apparentAzimuth * degToRad) * Math.cos(apparentAltitude * degToRad);
+ 
         var xC = 2*x / (1 + z);
         var yC = 2*y / (1 + z);
 
         DOM.prerender.ctx.beginPath();
-        DOM.prerender.ctx.arc((600 / 2 - xC * 30), (600 / 2 - yC * 30), 5, 0, 2 * Math.PI, false);
+        DOM.prerender.ctx.arc((600 / 2 - xC * 75), (600 / 2 - yC * 75), 3, 0, 2 * Math.PI, false);
         DOM.prerender.ctx.fillStyle = planet.color;
         DOM.prerender.ctx.fill();
     }
+
+    //$('.console').html(infoStr);
 }
 
 function rerender() {
     ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
-    projectStarBG();
+    //projectStarBG();
     projectPlanets();
 
-    $('.console').html(game.ship.azimuth[1] + '<br />' + game.ship.altitude[1]);
+    //$('.console').html(game.ship.azimuth[1] + '<br />' + game.ship.altitude[1]);
 
     //_scene.render();
 }
