@@ -89,7 +89,7 @@ var Render = function(label, source, destination, width, height, filter) {
             }
         }
 
-        this.dest.clearRect(0, 0, width, height);
+        //this.dest.clearRect(0, 0, width, height);
         this.dest.putImageData(imageDataT, 0, 0, 0, 0, width, height);
 
         this.locked = false;
@@ -128,6 +128,8 @@ function ctxSetShadow(ctx, color, blur) {
 }
 
 function projectStars() {
+    var noGlow = true;
+
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var star = starCluster.stars[s];
 
@@ -146,7 +148,20 @@ function projectStars() {
             DOM.prerender.ctx.beginPath();
             DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
             DOM.prerender.ctx.fillStyle = '#FFF';
-            ctxSetShadow(DOM.prerender.ctx, 'rgba(255,255,255,1.0)', (star.temp/1000));
+
+            var glowAmount = (star.temp*0.5)/dist;
+
+            if(glowAmount > 5) {
+                ctxSetShadow(DOM.prerender.ctx, 'rgba(255,255,255,1.0)', (glowAmount < 20 ? glowAmount : 20));
+                noGlow = false;
+            } else {
+                if(!noGlow) {
+                    // Only set glow to 0 if it isn't already
+                    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
+                    noGlow = true;
+                }
+            }
+
             DOM.prerender.ctx.fill();
         }
     }

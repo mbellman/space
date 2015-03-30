@@ -15,10 +15,13 @@ var Game = function() {
         //roll:     [0, 0],
 
         oAcceleration: 0.025,    // Orientation acceleration (orientation thruster power)
-        mAcceleration: 0.1,    // Movement acceleration (main thruster power)
+        mAcceleration: 0.01,    // Movement acceleration (main thruster power)
 
-        acceleration: 0,
-        velocity: 0
+        velocity: {
+            x: 0,
+            y: 0,
+            z: 0
+        }
     }
 
     this.camera = {
@@ -74,51 +77,83 @@ var PlanetarySystem = function() {
 
 function rotateCelestialBodies() {
     var rALat = game.camera.aLat*degToRad;
+    var sinRALat = Math.sin(rALat);
+    var cosRALat = Math.cos(rALat);
 
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var pY = planetSystem.planets[p].y;
         var pZ = planetSystem.planets[p].z;
 
-        planetSystem.planets[p].y = pY*Math.cos(rALat) - pZ*Math.sin(rALat);
-        planetSystem.planets[p].z = pY*Math.sin(rALat) + pZ*Math.cos(rALat);
+        planetSystem.planets[p].y = pY*cosRALat - pZ*sinRALat;
+        planetSystem.planets[p].z = pY*sinRALat + pZ*cosRALat;
     }
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var sY = starCluster.stars[s].y;
         var sZ = starCluster.stars[s].z;
 
-        starCluster.stars[s].y = sY*Math.cos(rALat) - sZ*Math.sin(rALat);
-        starCluster.stars[s].z = sY*Math.sin(rALat) + sZ*Math.cos(rALat);
+        starCluster.stars[s].y = sY*cosRALat - sZ*sinRALat;
+        starCluster.stars[s].z = sY*sinRALat + sZ*cosRALat;
     }
 
 
     var rALon = -game.camera.aLon*degToRad;
+    var sinRALon = Math.sin(rALon);
+    var cosRALon = Math.cos(rALon);
 
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var pX = planetSystem.planets[p].x;
         var pZ = planetSystem.planets[p].z;
 
-        planetSystem.planets[p].x = pX*Math.cos(rALon) - pZ*Math.sin(rALon);
-        planetSystem.planets[p].z = pX*Math.sin(rALon) + pZ*Math.cos(rALon);
+        planetSystem.planets[p].x = pX*cosRALon - pZ*sinRALon;
+        planetSystem.planets[p].z = pX*sinRALon + pZ*cosRALon;
     }
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var sX = starCluster.stars[s].x;
         var sZ = starCluster.stars[s].z;
 
-        starCluster.stars[s].x = sX*Math.cos(rALon) - sZ*Math.sin(rALon);
-        starCluster.stars[s].z = sX*Math.sin(rALon) + sZ*Math.cos(rALon);
+        starCluster.stars[s].x = sX*cosRALon - sZ*sinRALon;
+        starCluster.stars[s].z = sX*sinRALon + sZ*cosRALon;
     }
+}
+
+function rotateShipVelocityVector() {
+    var rALat = game.camera.aLat*degToRad;
+    var sinRALat = Math.sin(rALat);
+    var cosRALat = Math.cos(rALat);
+
+    var vY = game.ship.velocity.y;
+    var vZ = game.ship.velocity.z;
+
+    game.ship.velocity.y = vY*cosRALat - vZ*sinRALat;
+    game.ship.velocity.z = vY*sinRALat + vZ*cosRALat;
+
+    var rALon = -game.camera.aLon*degToRad;
+    var sinRALon = Math.sin(rALon);
+    var cosRALon = Math.cos(rALon);
+
+    var vX = game.ship.velocity.x;
+    var vZ = game.ship.velocity.z;
+
+    game.ship.velocity.x = vX*cosRALon - vZ*sinRALon;
+    game.ship.velocity.z = vX*sinRALon + vZ*cosRALon;
 }
 
 function translateCelestialBodies() {
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
-        planetSystem.planets[p].z -= game.ship.velocity;
+        planetSystem.planets[p].x -= game.ship.velocity.x;
+        planetSystem.planets[p].y -= game.ship.velocity.y;
+        planetSystem.planets[p].z -= game.ship.velocity.z;
     }
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
-        starCluster.stars[s].z -= game.ship.velocity;
+        starCluster.stars[s].x -= game.ship.velocity.x;
+        starCluster.stars[s].y -= game.ship.velocity.y;
+        starCluster.stars[s].z -= game.ship.velocity.z;
     }
+
+    $('.console').html(game.ship.velocity.z + '<br />' + game.ship.velocity.x + '<br />' + game.ship.velocity.y);
 }
 
 function updateOrientation() {
@@ -139,18 +174,18 @@ function updateOrientation() {
     }
 
     rotateCelestialBodies();
+    rotateShipVelocityVector();
 }
 
 function updateMovement() {
-
     if(keys.W) {
         // Accelerating forward
-        game.ship.velocity += game.ship.mAcceleration;
+        game.ship.velocity.z += game.ship.mAcceleration;
     }
 
     if(keys.S) {
         // Accelerating backward
-        game.ship.velocity -= game.ship.mAcceleration;
+        game.ship.velocity.z -= game.ship.mAcceleration;
     }
 
     translateCelestialBodies();
