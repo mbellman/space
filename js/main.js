@@ -75,7 +75,11 @@ $(document).ready(function(){
     });
 
     game         = new Game();
+
+    starCluster  = new starCluster();
     planetSystem = new PlanetarySystem();
+
+    starCluster.generate();
     planetSystem.generate();
     
     game.loop = setInterval(main, 1000 / 60);

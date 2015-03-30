@@ -42,29 +42,6 @@ var Render = function(label, source, destination, width, height, filter) {
                 'y': dy + hH
             }
         },
-        pincushionN: function(px, py) {
-            var x = (px - hW) / 1.2;
-            var y = (py - hH) / 1.2;
-            var r = Math.sqrt(x*x + y*y);
-            var maxr = hW;
-
-            if (r > maxr) {
-                return {
-                    'x': px,
-                    'y': py
-                }
-            }
-
-            var a = Math.atan2(y, x);
-            var k = (r/maxr) * (r/maxr) * 0.5 + 0.5;
-            var dx = Math.cos(a) * r/k;
-            var dy = Math.sin(a) * r/k;
-
-            return {
-                'x': dx + hW,
-                'y': dy + hH
-            }
-        },
         none: function(px, py) {
             return {
                 'x': px,
@@ -91,12 +68,12 @@ var Render = function(label, source, destination, width, height, filter) {
             var rowCycle = y * width;
 
             if(y < hH / 2 || y > hH * 1.5) {
-                //continue;
+                continue;
             }
 
             for(var x = 0 ; x < width ; x++) {
                 if(x < hW / 2 || x > hW * 1.5) {
-                    //continue;
+                    continue;
                 }
 
                 var dataPos = (x + rowCycle) * 4;
@@ -150,64 +127,63 @@ function ctxSetShadow(ctx, color, blur) {
     ctx.shadowOffsetY = 0;
 }
 
-function projectStarBG() {
-    var xDist = Math.floor(game.ship.azimuth[1] * canvasRatio);
-    var yDist = Math.floor(game.ship.altitude[1] * canvasRatio);
+function projectStars() {
+    for( var s = 0 ; s < starCluster.starCount ; s++ ) {
+        var star = starCluster.stars[s];
 
-    for(var i = 0 ; i < 2 ; i++) {
-        for(var j = 0 ; j < 2 ; j++) {
-            DOM.prerender.ctx.drawImage(DOM.starsImg,
-                (xDist % 600 - (1 - i) * 600),
-                (yDist % 600 - (1 - j) * 600),
-            600, 600);
+        var dist = Math.sqrt( sq(star.x) + sq(star.y) + sq(star.z) );
+
+        var nSx = star.x/dist;
+        var nSy = star.y/dist;
+        var nSz = star.z/dist;
+
+        var xC = 300 - (2*nSx / (1 + nSz))*75*(360 / fov);
+        var yC = 300 - (2*nSy / (1 + nSz))*75*(360 / fov);
+
+        var apparentSize = ((star.size*5) / dist) * (360/fov);
+
+        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
+            DOM.prerender.ctx.beginPath();
+            DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
+            DOM.prerender.ctx.fillStyle = '#FFF';
+            ctxSetShadow(DOM.prerender.ctx, 'rgba(255,255,255,1.0)', (star.temp/1000));
+            DOM.prerender.ctx.fill();
         }
     }
 
-    DOM.scene.canvas.css({
-        '-moz-transform'    : 'rotate(' + game.ship.roll[1] + 'deg)',
-        '-webkit-transform' : 'rotate(' + game.ship.roll[1] + 'deg)',
-        'transform'         : 'rotate(' + game.ship.roll[1] + 'deg)'
-    });
+    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
 }
 
 function projectPlanets() {
-    var infoStr = '';
-
-    for(var p = 0, planetCount = planetSystem.planets.length ; p < planetCount ; p++) {
+    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var planet = planetSystem.planets[p];
 
-        var pAlt = planet.altitude;
-        var pAz  = planet.azimuth;
+        var dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
 
-        var apparentAzimuth = JS_mod(pAz - game.ship.azimuth[1], 360);
-        var apparentAltitude = JS_mod(pAlt - game.ship.altitude[1], 360);
+        var nPx = planet.x/dist;
+        var nPy = planet.y/dist;
+        var nPz = planet.z/dist;
 
-        infoStr += Math.round(apparentAzimuth) + ' - ' + Math.round(apparentAltitude) + '<br />';
+        var xC = 300 - (2*nPx / (1 + nPz))*75*(360 / fov);
+        var yC = 300 - (2*nPy / (1 + nPz))*75*(360 / fov);
 
-        var x = Math.sin(apparentAzimuth * degToRad) * Math.cos(apparentAltitude * degToRad);
-        var y = Math.sin(apparentAltitude * degToRad);
-        var z = Math.cos(apparentAzimuth * degToRad) * Math.cos(apparentAltitude * degToRad);
- 
-        var xC = 2*x / (1 + z);
-        var yC = 2*y / (1 + z);
+        var apparentSize = ((planet.size*5) / dist) * (360/fov);
 
-        DOM.prerender.ctx.beginPath();
-        DOM.prerender.ctx.arc((600 / 2 - xC * 75), (600 / 2 - yC * 75), 3, 0, 2 * Math.PI, false);
-        DOM.prerender.ctx.fillStyle = planet.color;
-        DOM.prerender.ctx.fill();
+        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
+            DOM.prerender.ctx.beginPath();
+            DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
+            DOM.prerender.ctx.fillStyle = planet.color;
+            DOM.prerender.ctx.fill();
+        }
     }
-
-    //$('.console').html(infoStr);
 }
 
 function rerender() {
     ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
-    //projectStarBG();
+    projectStars();
     projectPlanets();
 
-    //$('.console').html(game.ship.azimuth[1] + '<br />' + game.ship.altitude[1]);
-
-    //_scene.render();
+    _scene.render();
 }

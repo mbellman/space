@@ -10,104 +10,155 @@ var Game = function() {
         x:        [0, 0],
         y:        [0, 0],
         z:        [0, 0],
-        azimuth:  [0, 0],
-        altitude: [0, 0],
-        roll:     [0, 0],
+        //azimuth:  [0, 0],
+        //altitude: [0, 0],
+        //roll:     [0, 0],
 
         oAcceleration: 0.025,    // Orientation acceleration (orientation thruster power)
-        mAcceleration: 0.025,    // Movement acceleration (main thruster power)
+        mAcceleration: 0.1,    // Movement acceleration (main thruster power)
 
         acceleration: 0,
         velocity: 0
+    }
+
+    this.camera = {
+        aLon: 0,     // Longitudinal acceleration
+        aLat: 0,     // Latitudinal acceleration
+        roll: 0
+    }
+
+    this.updateCameraRotation = function() {
+        this.camera.xRot += this.camera.aLat;
+        this.camera.yRot += this.camera.aLon;
+
+        rotateStars();
+        rotatePlanets();
+    }
+}
+
+var starCluster = function() {
+    this.stars = [];
+    this.starCount = 300;
+
+    this.generate = function() {
+        for( var s = 0 ; s < this.starCount ; s++ ) {
+            this.stars.push({
+                x: rnumber(1000, 10000) - 5500,
+                y: rnumber(1000, 10000) - 5500,
+                z: rnumber(1000, 10000) - 5500,
+                temp: rnumber(3000, 15000),
+                size: rnumber(200, 300)
+            });
+        }
     }
 }
 
 var PlanetarySystem = function() {
     this.planets = [];
+    this.planetCount = 0;
 
     this.generate = function() {
-        var c = ['#500', '#600', '#700', '#800', '#900', '#A00', '#B00', '#C00', '#D00', '#E00'];
-
-        for(var lat = 0 ; lat < 10 ; lat++) {
-            for(var lon = 0 ; lon < 10 ; lon++) {
-                this.planets.push({
-                    azimuth: lon * 36,
-                    altitude: (270 + (lat * 18)) % 360,
-                    color: c[lat]
-                });
-            }
+        for( var p = 0 ; p < 100 ; p++ ) {
+            this.planets.push({
+                x: rnumber(10, 100) - 55,
+                y: rnumber(10, 100) - 55,
+                z: rnumber(10, 100) - 55,
+                color: '#F0F',
+                size: rnumber(20, 30)
+            });
         }
+
+        this.planetCount = this.planets.length;
     }
 }
 
-function checkOrientationAcceleration() {
-    if(keys.A) { game.ship.roll[0] += game.ship.oAcceleration; }
-    if(keys.D) { game.ship.roll[0] -= game.ship.oAcceleration; }
+function rotateCelestialBodies() {
+    var rALat = game.camera.aLat*degToRad;
 
-    var cosRoll   = Math.cos(degToRad * game.ship.roll[1]);
-    var sinRoll   = Math.sin(degToRad * game.ship.roll[1]);
+    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
+        var pY = planetSystem.planets[p].y;
+        var pZ = planetSystem.planets[p].z;
 
-    if(keys.UP) {
-        game.ship.altitude[0] += game.ship.oAcceleration * cosRoll;
-        game.ship.azimuth[0]  += game.ship.oAcceleration * sinRoll;
+        planetSystem.planets[p].y = pY*Math.cos(rALat) - pZ*Math.sin(rALat);
+        planetSystem.planets[p].z = pY*Math.sin(rALat) + pZ*Math.cos(rALat);
     }
 
-    if(keys.DOWN) {
-        game.ship.altitude[0] -= game.ship.oAcceleration * cosRoll;
-        game.ship.azimuth[0]  -= game.ship.oAcceleration * sinRoll;
+    for( var s = 0 ; s < starCluster.starCount ; s++ ) {
+        var sY = starCluster.stars[s].y;
+        var sZ = starCluster.stars[s].z;
+
+        starCluster.stars[s].y = sY*Math.cos(rALat) - sZ*Math.sin(rALat);
+        starCluster.stars[s].z = sY*Math.sin(rALat) + sZ*Math.cos(rALat);
     }
 
-    if(keys.LEFT) {
-        game.ship.azimuth[0]  += game.ship.oAcceleration * cosRoll;
-        game.ship.altitude[0] -= game.ship.oAcceleration * sinRoll;
+
+    var rALon = -game.camera.aLon*degToRad;
+
+    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
+        var pX = planetSystem.planets[p].x;
+        var pZ = planetSystem.planets[p].z;
+
+        planetSystem.planets[p].x = pX*Math.cos(rALon) - pZ*Math.sin(rALon);
+        planetSystem.planets[p].z = pX*Math.sin(rALon) + pZ*Math.cos(rALon);
     }
 
-    if(keys.RIGHT) {
-        game.ship.azimuth[0]  -= game.ship.oAcceleration * cosRoll;
-        game.ship.altitude[0] += game.ship.oAcceleration * sinRoll;
+    for( var s = 0 ; s < starCluster.starCount ; s++ ) {
+        var sX = starCluster.stars[s].x;
+        var sZ = starCluster.stars[s].z;
+
+        starCluster.stars[s].x = sX*Math.cos(rALon) - sZ*Math.sin(rALon);
+        starCluster.stars[s].z = sX*Math.sin(rALon) + sZ*Math.cos(rALon);
+    }
+}
+
+function translateCelestialBodies() {
+    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
+        planetSystem.planets[p].z -= game.ship.velocity;
+    }
+
+    for( var s = 0 ; s < starCluster.starCount ; s++ ) {
+        starCluster.stars[s].z -= game.ship.velocity;
     }
 }
 
 function updateOrientation() {
-    checkOrientationAcceleration();
+    if(keys.UP) {
+        game.camera.aLat += game.ship.oAcceleration;
+    }
 
-    game.ship.azimuth[1]  += game.ship.azimuth[0];
-    game.ship.altitude[1] += game.ship.altitude[0];
-    game.ship.roll[1]     += game.ship.roll[0];
+    if(keys.DOWN) {
+        game.camera.aLat -= game.ship.oAcceleration;
+    }
 
-    game.ship.azimuth[1]  = JS_mod(game.ship.azimuth[1], 360);
-    game.ship.altitude[1] = JS_mod(game.ship.altitude[1], 360);
-    game.ship.roll[1]     = JS_mod(game.ship.roll[1], 360);
+    if(keys.LEFT) {
+        game.camera.aLon -= game.ship.oAcceleration;
+    }
+
+    if(keys.RIGHT) {
+        game.camera.aLon += game.ship.oAcceleration;
+    }
+
+    rotateCelestialBodies();
 }
 
-function checkMovementAcceleration() {
-    var cosAz = Math.cos(degToRad * game.ship.azimuth[1]);
-    var sinAz = Math.sin(degToRad * game.ship.azimuth[1]);
-
-    var cosAl = Math.cos(degToRad * game.ship.altitude[1]);
-    var sinAl = Math.sin(degToRad * game.ship.altitude[1]);
+function updateMovement() {
 
     if(keys.W) {
         // Accelerating forward
-        game.ship.x[0] += game.ship.mAcceleration * (sinAl - sinAl);
-        game.ship.z[0] += game.ship.mAcceleration * (cozAz - sinAl);
+        game.ship.velocity += game.ship.mAcceleration;
     }
 
     if(keys.S) {
         // Accelerating backward
-        game.ship.z[0] -= game.ship.mAcceleration;
+        game.ship.velocity -= game.ship.mAcceleration;
     }
-}
 
-function updateMovement() {
-    checkMovementAcceleration();
-
-    game.ship.x[1] += game.ship.x[0];
-    game.ship.x[1] += game.ship.x[0];
-    game.ship.x[1] += game.ship.x[0];
+    translateCelestialBodies();
 }
 
 function main() {
     updateOrientation();
+    updateMovement();
+
     rerender();
 }
