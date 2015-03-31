@@ -44,7 +44,7 @@ function cacheDOM() {
 $(document).ready(function(){
     cacheDOM();
 
-    _scene = new Render('starBG', DOM.prerender.ctx, DOM.scene.ctx, 600, 600, 'pincushion');
+    _scene = new Render('starBG', DOM.prerender.ctx, DOM.scene.ctx, 600, 600, 'pincushion', 1.4);
 
     $(window).keydown(function(e){
         if(e.which == 37) keys.LEFT  = true;

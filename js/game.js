@@ -25,9 +25,9 @@ var Game = function() {
     }
 
     this.camera = {
-        aLon: 0,     // Longitudinal acceleration
-        aLat: 0,     // Latitudinal acceleration
-        roll: 0
+        aLon: 0,        // Longitudinal acceleration
+        aLat: 0,        // Latitudinal acceleration
+        roll: [0, 0]    // Rotation rate, rotation amount
     }
 
     this.updateCameraRotation = function() {
@@ -73,6 +73,17 @@ var PlanetarySystem = function() {
 
         this.planetCount = this.planets.length;
     }
+}
+
+function rollCamera() {
+    game.camera.roll[1] += game.camera.roll[0];
+    game.camera.roll[1]  = JS_mod(game.camera.roll[1], 360);
+
+    DOM.scene.canvas.css({
+        '-moz-transform' : 'rotate(' + game.camera.roll[1] + 'deg)',
+        '-webkit-transform' : 'rotate(' + game.camera.roll[1] + 'deg)',
+        'transform' : 'rotate(' + game.camera.roll[1] + 'deg)'
+    });
 }
 
 function rotateCelestialBodies() {
@@ -155,22 +166,38 @@ function translateCelestialBodies() {
 }
 
 function updateOrientation() {
+    var sinRoll = Math.sin(game.camera.roll[1]*degToRad);
+    var cosRoll = Math.cos(game.camera.roll[1]*degToRad);
+
     if(keys.UP) {
-        game.camera.aLat += game.ship.oAcceleration;
+        game.camera.aLat += game.ship.oAcceleration*cosRoll;
+        game.camera.aLon -= game.ship.oAcceleration*sinRoll;
     }
 
     if(keys.DOWN) {
-        game.camera.aLat -= game.ship.oAcceleration;
+        game.camera.aLat -= game.ship.oAcceleration*cosRoll;
+        game.camera.aLon += game.ship.oAcceleration*sinRoll;
     }
 
     if(keys.LEFT) {
-        game.camera.aLon -= game.ship.oAcceleration;
+        game.camera.aLon -= game.ship.oAcceleration*cosRoll;
+        game.camera.aLat -= game.ship.oAcceleration*sinRoll;
     }
 
     if(keys.RIGHT) {
-        game.camera.aLon += game.ship.oAcceleration;
+        game.camera.aLon += game.ship.oAcceleration*cosRoll;
+        game.camera.aLat += game.ship.oAcceleration*sinRoll;
     }
 
+    if(keys.A) {
+        game.camera.roll[0] += game.ship.oAcceleration;
+    }
+
+    if(keys.D) {
+        game.camera.roll[0] -= game.ship.oAcceleration;
+    }
+
+    rollCamera();
     rotateCelestialBodies();
     rotateShipVelocityVector();
 }

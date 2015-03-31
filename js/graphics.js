@@ -4,30 +4,31 @@ var fov = 90;
 var canvasRatio = 600 / 360;
 var angleRatio = 4;
 
-var Render = function(label, source, destination, width, height, filter) {
+var Render = function(label, source, destination, width, height, filter, intensity) {
     this.lbl    = label;
     this.srce   = source;
     this.dest   = destination;
     this.w      = width;
     this.h      = height;
+    this.stren  = intensity;
     this.mapped = false;
     this.locked = false;
 
     var hW = width / 2;
     var hH = height / 2;
 
-    var yLow = hH/2;
-    var yHigh = hH*1.5;
+    var yLow = hH/4;
+    var yHigh = hH*1.75;
 
-    var xLow = hW/2;
-    var xHigh = hW*1.5;
+    var xLow = hW/4;
+    var xHigh = hW*1.75;
 
     var map = [];
 
     this.pointDisplace = {
         pincushion: function(px, py) {
-            var x = (px - hW) / 1.2;
-            var y = (py - hH) / 1.2;
+            var x = (px - hW) / intensity;
+            var y = (py - hH) / intensity;
             var r = Math.sqrt(x*x + y*y);
             var maxr = hW;
 
