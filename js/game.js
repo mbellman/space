@@ -152,8 +152,6 @@ function translateCelestialBodies() {
         starCluster.stars[s].y -= game.ship.velocity.y;
         starCluster.stars[s].z -= game.ship.velocity.z;
     }
-
-    $('.console').html(game.ship.velocity.z + '<br />' + game.ship.velocity.x + '<br />' + game.ship.velocity.y);
 }
 
 function updateOrientation() {
@@ -196,4 +194,6 @@ function main() {
     updateMovement();
 
     rerender();
+
+    requestAnimationFrame(main);
 }

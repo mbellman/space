@@ -16,6 +16,12 @@ var Render = function(label, source, destination, width, height, filter) {
     var hW = width / 2;
     var hH = height / 2;
 
+    var yLow = hH/2;
+    var yHigh = hH*1.5;
+
+    var xLow = hW/2;
+    var xHigh = hW*1.5;
+
     var map = [];
 
     this.pointDisplace = {
@@ -60,19 +66,15 @@ var Render = function(label, source, destination, width, height, filter) {
         var imageData = this.srce.getImageData(0, 0, width, height);
         var imageDataT = this.srce.createImageData(width, height);
 
-        function colorat(x, y, channel) {
-            return imageData.data[(x + y * height) * 4 + channel];
-        }
-
         for(var y = 0 ; y < height ; y++) {
             var rowCycle = y * width;
 
-            if(y < hH / 2 || y > hH * 1.5) {
+            if(y < yLow || y > yHigh) {
                 continue;
             }
 
             for(var x = 0 ; x < width ; x++) {
-                if(x < hW / 2 || x > hW * 1.5) {
+                if(x < xLow || x > xHigh) {
                     continue;
                 }
 
@@ -89,7 +91,6 @@ var Render = function(label, source, destination, width, height, filter) {
             }
         }
 
-        //this.dest.clearRect(0, 0, width, height);
         this.dest.putImageData(imageDataT, 0, 0, 0, 0, width, height);
 
         this.locked = false;
@@ -165,11 +166,11 @@ function projectStars() {
             DOM.prerender.ctx.fill();
         }
     }
-
-    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
 }
 
 function projectPlanets() {
+    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
+
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var planet = planetSystem.planets[p];
 

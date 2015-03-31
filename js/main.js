@@ -82,5 +82,5 @@ $(document).ready(function(){
     starCluster.generate();
     planetSystem.generate();
     
-    game.loop = setInterval(main, 1000 / 60);
+    main();
 });
