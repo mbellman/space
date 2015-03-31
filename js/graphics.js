@@ -129,7 +129,26 @@ function ctxSetShadow(ctx, color, blur) {
     ctx.shadowOffsetY = 0;
 }
 
-function projectStars() {
+function drawStar(x, y, radius, glow) {
+    DOM.prerender.ctx.beginPath();
+    DOM.prerender.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+    DOM.prerender.ctx.fillStyle = '#FFF';
+
+    if(glow > 5) {
+        ctxSetShadow(DOM.prerender.ctx, 'rgba(255,255,255,1.0)', (glow < 20 ? glow : 20));
+    }
+
+    DOM.prerender.ctx.fill();
+}
+
+function drawPlanet(x, y, radius, color) {
+    DOM.prerender.ctx.beginPath();
+    DOM.prerender.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+    DOM.prerender.ctx.fillStyle = color;
+    DOM.prerender.ctx.fill();
+}
+
+function projectCelestialBodies() {
     var noGlow = true;
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
@@ -147,10 +166,40 @@ function projectStars() {
         var apparentSize = ((star.size*5) / dist) * (360/fov);
 
         if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
+
+            // Rendering a star if it is within the FOV
+            // TODO: OR IF YOU ARE IN ITS SYSTEM
+
+            var glowAmount = (star.temp*0.5)/dist;
+            drawStar(xC, yC, apparentSize, glowAmount);
+
+            /*
             DOM.prerender.ctx.beginPath();
             DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
             DOM.prerender.ctx.fillStyle = '#FFF';
+            DOM.prerender.ctx.fill();
+            */
+            
+            ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
 
+            for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
+                var planet = star.planets.planets[p];
+
+                var dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
+
+                var nPx = planet.x/dist;
+                var nPy = planet.y/dist;
+                var nPz = planet.z/dist;
+
+                var xC = 300 - (2*nPx / (1 + nPz))*75*(360 / fov);
+                var yC = 300 - (2*nPy / (1 + nPz))*75*(360 / fov);
+
+                var apparentSize = ((planet.size*5) / dist) * (360/fov);
+
+                drawPlanet(xC, yC, apparentSize, planet.color);
+            }
+
+            /*
             var glowAmount = (star.temp*0.5)/dist;
 
             if(glowAmount > 5) {
@@ -163,8 +212,7 @@ function projectStars() {
                     noGlow = true;
                 }
             }
-
-            DOM.prerender.ctx.fill();
+            */
         }
     }
 }
@@ -199,8 +247,8 @@ function rerender() {
     ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
-    projectStars();
-    projectPlanets();
+    projectCelestialBodies();
+    //projectPlanets();
 
     _scene.render();
 }

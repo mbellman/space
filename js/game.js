@@ -45,12 +45,17 @@ var starCluster = function() {
 
     this.generate = function() {
         for( var s = 0 ; s < this.starCount ; s++ ) {
+            var xC = rnumber(1000, 10000) - 5500;
+            var yC = rnumber(1000, 10000) - 5500;
+            var zC = rnumber(1000, 10000) - 5500;
+
             this.stars.push({
-                x: rnumber(1000, 10000) - 5500,
-                y: rnumber(1000, 10000) - 5500,
-                z: rnumber(1000, 10000) - 5500,
+                x: xC,
+                y: yC,
+                z: zC,
                 temp: rnumber(3000, 15000),
-                size: rnumber(200, 300)
+                size: rnumber(200, 300),
+                planets: generatePlanets(xC, yC, zC)
             });
         }
     }
@@ -60,19 +65,37 @@ var PlanetarySystem = function() {
     this.planets = [];
     this.planetCount = 0;
 
+    this.xO;
+    this.yO;
+    this.zO;
+
     this.generate = function() {
-        for( var p = 0 ; p < 100 ; p++ ) {
+        var total = rnumber(1, 8) - 1;
+
+        for( var p = 0 ; p < total ; p++ ) {
             this.planets.push({
-                x: rnumber(10, 100) - 55,
-                y: rnumber(10, 100) - 55,
-                z: rnumber(10, 100) - 55,
+                x: this.xO + rnumber(10, 100) - 55,
+                y: this.yO + rnumber(10, 100) - 55,
+                z: this.zO + rnumber(10, 100) - 55,
+                size: rnumber(50, 150),
                 color: '#F0F',
-                size: rnumber(20, 30)
             });
         }
 
-        this.planetCount = this.planets.length;
+        this.planetCount = total;
     }
+}
+
+function generatePlanets(xO, yO, zO) {
+    var planets = new PlanetarySystem();
+
+    planets.xO = xO;
+    planets.yO = yO;
+    planets.zO = zO;
+
+    planets.generate();
+
+    return planets;
 }
 
 function rollCamera() {
@@ -91,6 +114,7 @@ function rotateCelestialBodies() {
     var sinRALat = Math.sin(rALat);
     var cosRALat = Math.cos(rALat);
 
+    /*
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var pY = planetSystem.planets[p].y;
         var pZ = planetSystem.planets[p].z;
@@ -98,13 +122,26 @@ function rotateCelestialBodies() {
         planetSystem.planets[p].y = pY*cosRALat - pZ*sinRALat;
         planetSystem.planets[p].z = pY*sinRALat + pZ*cosRALat;
     }
+    */
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
-        var sY = starCluster.stars[s].y;
-        var sZ = starCluster.stars[s].z;
+        var star = starCluster.stars[s];
 
-        starCluster.stars[s].y = sY*cosRALat - sZ*sinRALat;
-        starCluster.stars[s].z = sY*sinRALat + sZ*cosRALat;
+        var sY = star.y;
+        var sZ = star.z;
+
+        star.y = sY*cosRALat - sZ*sinRALat;
+        star.z = sY*sinRALat + sZ*cosRALat;
+
+        for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
+            var planet = star.planets.planets[p];
+
+            var pY = planet.y;
+            var pZ = planet.z;
+
+            planet.y = pY*cosRALat - pZ*sinRALat;
+            planet.z = pY*sinRALat + pZ*cosRALat;
+        }
     }
 
 
@@ -112,6 +149,7 @@ function rotateCelestialBodies() {
     var sinRALon = Math.sin(rALon);
     var cosRALon = Math.cos(rALon);
 
+    /*
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         var pX = planetSystem.planets[p].x;
         var pZ = planetSystem.planets[p].z;
@@ -119,13 +157,26 @@ function rotateCelestialBodies() {
         planetSystem.planets[p].x = pX*cosRALon - pZ*sinRALon;
         planetSystem.planets[p].z = pX*sinRALon + pZ*cosRALon;
     }
+    */
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
-        var sX = starCluster.stars[s].x;
-        var sZ = starCluster.stars[s].z;
+        var star = starCluster.stars[s];
 
-        starCluster.stars[s].x = sX*cosRALon - sZ*sinRALon;
-        starCluster.stars[s].z = sX*sinRALon + sZ*cosRALon;
+        var sX = star.x;
+        var sZ = star.z;
+
+        star.x = sX*cosRALon - sZ*sinRALon;
+        star.z = sX*sinRALon + sZ*cosRALon;
+
+        for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
+            var planet = star.planets.planets[p];
+
+            var pX = planet.x;
+            var pZ = planet.z;
+
+            planet.x = pX*cosRALon - pZ*sinRALon;
+            planet.z = pX*sinRALon + pZ*cosRALon;
+        }
     }
 }
 
@@ -152,16 +203,28 @@ function rotateShipVelocityVector() {
 }
 
 function translateCelestialBodies() {
+    /*
     for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
         planetSystem.planets[p].x -= game.ship.velocity.x;
         planetSystem.planets[p].y -= game.ship.velocity.y;
         planetSystem.planets[p].z -= game.ship.velocity.z;
     }
+    */
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
-        starCluster.stars[s].x -= game.ship.velocity.x;
-        starCluster.stars[s].y -= game.ship.velocity.y;
-        starCluster.stars[s].z -= game.ship.velocity.z;
+        var star = starCluster.stars[s];
+
+        star.x -= game.ship.velocity.x;
+        star.y -= game.ship.velocity.y;
+        star.z -= game.ship.velocity.z;
+
+        for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
+            var planet = star.planets.planets[p];
+
+            planet.x -= game.ship.velocity.x;
+            planet.y -= game.ship.velocity.y;
+            planet.z -= game.ship.velocity.z;
+        }
     }
 }
 

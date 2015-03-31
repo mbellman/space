@@ -77,10 +77,10 @@ $(document).ready(function(){
     game         = new Game();
 
     starCluster  = new starCluster();
-    planetSystem = new PlanetarySystem();
+    //planetSystem = new PlanetarySystem();
 
     starCluster.generate();
-    planetSystem.generate();
+    //planetSystem.generate();
     
     main();
 });
