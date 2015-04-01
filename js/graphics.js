@@ -163,26 +163,19 @@ function projectCelestialBodies() {
         var xC = 300 - (2*nSx / (1 + nSz))*75*(360 / fov);
         var yC = 300 - (2*nSy / (1 + nSz))*75*(360 / fov);
 
-        var apparentSize = ((star.size*5) / dist) * (360/fov);
+        var apparentSize = (star.size / dist) * (360/fov);
 
-        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
-
+        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360 || dist < 1000) {
             // Rendering a star if it is within the FOV
-            // TODO: OR IF YOU ARE IN ITS SYSTEM
 
             var glowAmount = (star.temp*0.5)/dist;
             drawStar(xC, yC, apparentSize, glowAmount);
-
-            /*
-            DOM.prerender.ctx.beginPath();
-            DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
-            DOM.prerender.ctx.fillStyle = '#FFF';
-            DOM.prerender.ctx.fill();
-            */
             
             ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
 
             for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
+                // Rendering planets
+
                 var planet = star.planets.planets[p];
 
                 var dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
@@ -198,21 +191,6 @@ function projectCelestialBodies() {
 
                 drawPlanet(xC, yC, apparentSize, planet.color);
             }
-
-            /*
-            var glowAmount = (star.temp*0.5)/dist;
-
-            if(glowAmount > 5) {
-                ctxSetShadow(DOM.prerender.ctx, 'rgba(255,255,255,1.0)', (glowAmount < 20 ? glowAmount : 20));
-                noGlow = false;
-            } else {
-                if(!noGlow) {
-                    // Only set glow to 0 if it isn't already
-                    ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
-                    noGlow = true;
-                }
-            }
-            */
         }
     }
 }
@@ -232,7 +210,7 @@ function projectPlanets() {
         var xC = 300 - (2*nPx / (1 + nPz))*75*(360 / fov);
         var yC = 300 - (2*nPy / (1 + nPz))*75*(360 / fov);
 
-        var apparentSize = ((planet.size*5) / dist) * (360/fov);
+        var apparentSize = (planet.size / dist) * (360/fov);
 
         if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
             DOM.prerender.ctx.beginPath();

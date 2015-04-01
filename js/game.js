@@ -45,17 +45,19 @@ var starCluster = function() {
 
     this.generate = function() {
         for( var s = 0 ; s < this.starCount ; s++ ) {
-            var xC = rnumber(1000, 10000) - 5500;
-            var yC = rnumber(1000, 10000) - 5500;
-            var zC = rnumber(1000, 10000) - 5500;
+            var xC = rnumber(1, 100000) - 50000;
+            var yC = rnumber(1, 100000) - 50000;
+            var zC = rnumber(1, 100000) - 50000;
+
+            var radius = rnumber(2500, 15000);
 
             this.stars.push({
                 x: xC,
                 y: yC,
                 z: zC,
                 temp: rnumber(3000, 15000),
-                size: rnumber(200, 300),
-                planets: generatePlanets(xC, yC, zC)
+                size: radius,
+                planets: generatePlanets(xC, yC, zC, radius)
             });
         }
     }
@@ -68,30 +70,51 @@ var PlanetarySystem = function() {
     this.xO;
     this.yO;
     this.zO;
+    this.starRadius;
 
     this.generate = function() {
-        var total = rnumber(1, 8) - 1;
+        var total = rnumber(1, 12) - 1;
+
+        var xSlope = rnumber(1, 20) - 10;
+        var zSlope = rnumber(1, 20) - 10;
+
+        var desiredDist = rnumber(10, 20);
 
         for( var p = 0 ; p < total ; p++ ) {
+            var tX = (rnumber(1, 50) - 25);
+            var tZ = (rnumber(1, 50) - 25);
+            var tY = (tX*xSlope + tZ*zSlope)/(zSlope > xSlope ? zSlope : xSlope);
+
+            console.log(tX + ', ' + tY + ', ' + tZ);
+
+            var dist = Math.sqrt( sq(tX) + sq(tY) + sq(tZ) );
+
+            var cX = this.xO + tX*((this.starRadius/30 + desiredDist)/dist);
+            var cY = this.yO + tY*((this.starRadius/30 + desiredDist)/dist);
+            var cZ = this.zO + tZ*((this.starRadius/30 + desiredDist)/dist);
+
             this.planets.push({
-                x: this.xO + rnumber(10, 100) - 55,
-                y: this.yO + rnumber(10, 100) - 55,
-                z: this.zO + rnumber(10, 100) - 55,
-                size: rnumber(50, 150),
-                color: '#F0F',
+                x: cX,
+                y: cY,
+                z: cZ,
+                size: rnumber(Math.ceil(this.starRadius*0.001), Math.ceil(this.starRadius*0.01)),
+                color: planetColors[rnumber(1, planetColors.length) - 1]
             });
+
+            desiredDist *= 2;
         }
 
         this.planetCount = total;
     }
 }
 
-function generatePlanets(xO, yO, zO) {
+function generatePlanets(xO, yO, zO, radius) {
     var planets = new PlanetarySystem();
 
     planets.xO = xO;
     planets.yO = yO;
     planets.zO = zO;
+    planets.starRadius = radius;
 
     planets.generate();
 
