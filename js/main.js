@@ -19,7 +19,7 @@ var keys = {
 
 var degToRad = Math.PI / 180;
 
-var planetColors = ['#555', '#AAA', '#6D5D4', '#626262', '#764E2C', '##BFAB4B', '#586632', '#42733D', '#B9C2AA', '#28726E'];
+var planetColors = ['#555', '#AAA', '#6D5D44', '#626262', '#764E2C', '#BFAB4B', '#586632', '#42733D', '#B9C2AA', '#28726E'];
 
 // ---------------------------------------
 // -------------- Handlers ---------------
@@ -77,12 +77,10 @@ $(document).ready(function(){
     });
 
     game         = new Game();
-
     starCluster  = new starCluster();
-    //planetSystem = new PlanetarySystem();
 
     starCluster.generate();
-    //planetSystem.generate();
+    starCluster.logDistances();
     
     main();
 });

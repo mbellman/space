@@ -42,6 +42,8 @@ var Game = function() {
 var starCluster = function() {
     this.stars = [];
     this.starCount = 300;
+    this.initialized = false;
+    this.closestStar = 0;
 
     this.generate = function() {
         for( var s = 0 ; s < this.starCount ; s++ ) {
@@ -57,9 +59,42 @@ var starCluster = function() {
                 z: zC,
                 temp: rnumber(3000, 15000),
                 size: radius,
+                dist: 0,    // Updated during game cycle
                 planets: generatePlanets(xC, yC, zC, radius)
             });
         }
+
+        this.initialized = true;
+    }
+
+    this.logDistances = function() {
+        if(!this.initialized) {
+            return;
+        }
+
+        var minDist = -1;
+        var mID = 0;
+
+        for( var s = 0 ; s < this.starCount ; s++ ) {
+            var star = this.stars[s];
+
+            var dist = Math.sqrt( sq(star.x) + sq(star.y) + sq(star.z) );
+
+            if(minDist == -1) {
+                // Initializing
+                minDist = dist;
+            } else {
+                if (dist < minDist) {
+                    // Found new minimum distance
+                    minDist = dist;
+                    mID = s;
+                }
+            }
+
+            star.dist = dist;
+        }
+
+        this.closestStar = mID;
     }
 }
 
@@ -85,8 +120,6 @@ var PlanetarySystem = function() {
             var tZ = (rnumber(1, 50) - 25);
             var tY = (tX*xSlope + tZ*zSlope)/(zSlope > xSlope ? zSlope : xSlope);
 
-            console.log(tX + ', ' + tY + ', ' + tZ);
-
             var dist = Math.sqrt( sq(tX) + sq(tY) + sq(tZ) );
 
             var cX = this.xO + tX*((this.starRadius/30 + desiredDist)/dist);
@@ -97,7 +130,8 @@ var PlanetarySystem = function() {
                 x: cX,
                 y: cY,
                 z: cZ,
-                size: rnumber(Math.ceil(this.starRadius*0.001), Math.ceil(this.starRadius*0.01)),
+                size: rnumber(Math.ceil(this.starRadius*0.005), Math.ceil(this.starRadius*0.05)),
+                dist: Math.sqrt( sq(cX) + sq(cY) + sq(cZ) ),
                 color: planetColors[rnumber(1, planetColors.length) - 1]
             });
 
@@ -105,6 +139,18 @@ var PlanetarySystem = function() {
         }
 
         this.planetCount = total;
+    }
+
+    this.sortByDistance = function() {
+        for( var p = 0 ; p < this.planetCount ; p++ ) {
+            var planet = this.planets[p];
+
+            planet.dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
+        }
+
+        this.planets.sort(function(a, b){
+            return b.dist - a.dist;
+        });
     }
 }
 
@@ -137,16 +183,6 @@ function rotateCelestialBodies() {
     var sinRALat = Math.sin(rALat);
     var cosRALat = Math.cos(rALat);
 
-    /*
-    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
-        var pY = planetSystem.planets[p].y;
-        var pZ = planetSystem.planets[p].z;
-
-        planetSystem.planets[p].y = pY*cosRALat - pZ*sinRALat;
-        planetSystem.planets[p].z = pY*sinRALat + pZ*cosRALat;
-    }
-    */
-
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var star = starCluster.stars[s];
 
@@ -171,16 +207,6 @@ function rotateCelestialBodies() {
     var rALon = -game.camera.aLon*degToRad;
     var sinRALon = Math.sin(rALon);
     var cosRALon = Math.cos(rALon);
-
-    /*
-    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
-        var pX = planetSystem.planets[p].x;
-        var pZ = planetSystem.planets[p].z;
-
-        planetSystem.planets[p].x = pX*cosRALon - pZ*sinRALon;
-        planetSystem.planets[p].z = pX*sinRALon + pZ*cosRALon;
-    }
-    */
 
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var star = starCluster.stars[s];
@@ -226,14 +252,6 @@ function rotateShipVelocityVector() {
 }
 
 function translateCelestialBodies() {
-    /*
-    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
-        planetSystem.planets[p].x -= game.ship.velocity.x;
-        planetSystem.planets[p].y -= game.ship.velocity.y;
-        planetSystem.planets[p].z -= game.ship.velocity.z;
-    }
-    */
-
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
         var star = starCluster.stars[s];
 
@@ -306,6 +324,7 @@ function main() {
     updateOrientation();
     updateMovement();
 
+    starCluster.logDistances();
     rerender();
 
     requestAnimationFrame(main);

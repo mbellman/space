@@ -151,73 +151,95 @@ function drawPlanet(x, y, radius, color) {
 function projectCelestialBodies() {
     var noGlow = true;
 
+    // Rendering distant stars
     for( var s = 0 ; s < starCluster.starCount ; s++ ) {
+        if(s == starCluster.closestStar) {
+            continue;
+        }
+
         var star = starCluster.stars[s];
 
-        var dist = Math.sqrt( sq(star.x) + sq(star.y) + sq(star.z) );
+        //var sDist = Math.sqrt( sq(star.x) + sq(star.y) + sq(star.z) );
+        var sDist = star.dist;
 
-        var nSx = star.x/dist;
-        var nSy = star.y/dist;
-        var nSz = star.z/dist;
+        var nSx = star.x/sDist;
+        var nSy = star.y/sDist;
+        var nSz = star.z/sDist;
 
         var xC = 300 - (2*nSx / (1 + nSz))*75*(360 / fov);
         var yC = 300 - (2*nSy / (1 + nSz))*75*(360 / fov);
 
-        var apparentSize = (star.size / dist) * (360/fov);
+        var apparentSize = (star.size / sDist) * (360/fov);
+        if(apparentSize < 1) apparentSize = 1;
 
-        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360 || dist < 1000) {
+        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360 || sDist < 1000) {
             // Rendering a star if it is within the FOV
 
-            var glowAmount = (star.temp*0.5)/dist;
+            var glowAmount = (star.temp*0.5)/sDist;
             drawStar(xC, yC, apparentSize, glowAmount);
-            
-            ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
-
-            for( var p = 0 ; p < star.planets.planetCount ; p++ ) {
-                // Rendering planets
-
-                var planet = star.planets.planets[p];
-
-                var dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
-
-                var nPx = planet.x/dist;
-                var nPy = planet.y/dist;
-                var nPz = planet.z/dist;
-
-                var xC = 300 - (2*nPx / (1 + nPz))*75*(360 / fov);
-                var yC = 300 - (2*nPy / (1 + nPz))*75*(360 / fov);
-
-                var apparentSize = ((planet.size*5) / dist) * (360/fov);
-
-                drawPlanet(xC, yC, apparentSize, planet.color);
-            }
         }
     }
-}
 
-function projectPlanets() {
     ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
 
-    for( var p = 0 ; p < planetSystem.planetCount ; p++ ) {
-        var planet = planetSystem.planets[p];
+    // Rendering currently occupied system
+    var currentStar = starCluster.stars[starCluster.closestStar];
+    var starDistance = currentStar.dist;
+    var starRendered = false;
 
-        var dist = Math.sqrt( sq(planet.x) + sq(planet.y) + sq(planet.z) );
+    currentStar.planets.sortByDistance();
 
-        var nPx = planet.x/dist;
-        var nPy = planet.y/dist;
-        var nPz = planet.z/dist;
+    for( var p = 0 ; p < currentStar.planets.planetCount ; p++ ) {
+        var planet = currentStar.planets.planets[p];
+
+        var planetDistance = planet.dist;
+
+        if(!starRendered) {
+            if(starDistance > planetDistance) {
+                var nSx = currentStar.x/starDistance;
+                var nSy = currentStar.y/starDistance;
+                var nSz = currentStar.z/starDistance;
+
+                var xC = 300 - (2*nSx / (1 + nSz))*75*(360 / fov);
+                var yC = 300 - (2*nSy / (1 + nSz))*75*(360 / fov);
+
+                var apparentSize = (currentStar.size / starDistance) * (360/fov);
+                var glowAmount = (currentStar.temp*0.5)/starDistance;
+
+                drawStar(xC, yC, apparentSize, glowAmount);
+
+                ctxSetShadow(DOM.prerender.ctx, 'rgba(0,0,0,0)', 0);
+
+                starRendered = true;
+            }
+        }
+
+        var nPx = planet.x/planetDistance;
+        var nPy = planet.y/planetDistance;
+        var nPz = planet.z/planetDistance;
 
         var xC = 300 - (2*nPx / (1 + nPz))*75*(360 / fov);
         var yC = 300 - (2*nPy / (1 + nPz))*75*(360 / fov);
 
-        var apparentSize = (planet.size / dist) * (360/fov);
+        var apparentSize = (planet.size/planetDistance) * (360/fov);
 
-        if( Math.sqrt( sq(Math.abs(xC)-300) + sq(Math.abs(yC)-300) ) < 360) {
-            DOM.prerender.ctx.beginPath();
-            DOM.prerender.ctx.arc(xC, yC, apparentSize, 0, 2 * Math.PI, false);
-            DOM.prerender.ctx.fillStyle = planet.color;
-            DOM.prerender.ctx.fill();
-        }
+        drawPlanet(xC, yC, apparentSize, planet.color);
+    }
+
+    if(!starRendered) {
+        var nSx = currentStar.x/starDistance;
+        var nSy = currentStar.y/starDistance;
+        var nSz = currentStar.z/starDistance;
+
+        var xC = 300 - (2*nSx / (1 + nSz))*75*(360 / fov);
+        var yC = 300 - (2*nSy / (1 + nSz))*75*(360 / fov);
+
+        var apparentSize = (currentStar.size / starDistance) * (360/fov);
+        var glowAmount = (currentStar.temp*0.5)/starDistance;
+
+        drawStar(xC, yC, apparentSize, glowAmount);
+
+        starRendered = true;
     }
 }
 
@@ -226,7 +248,6 @@ function rerender() {
     DOM.prerender.ctx.clearRect(0, 0, 600, 600);
 
     projectCelestialBodies();
-    //projectPlanets();
 
     _scene.render();
 }
