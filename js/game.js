@@ -47,9 +47,9 @@ var starCluster = function() {
 
     this.generate = function() {
         for( var s = 0 ; s < this.starCount ; s++ ) {
-            var xC = rnumber(1, 100000) - 50000;
-            var yC = rnumber(1, 100000) - 50000;
-            var zC = rnumber(1, 100000) - 50000;
+            var xC = rnumber(1, 10000) - 5000;
+            var yC = rnumber(1, 10000) - 5000;
+            var zC = rnumber(1, 10000) - 5000;
 
             var radius = rnumber(2500, 15000);
 
