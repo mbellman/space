@@ -108,7 +108,7 @@ var PlanetarySystem = function() {
     this.starRadius;
 
     this.generate = function() {
-        var total = rnumber(1, 12) - 1;
+        var total = rnumber(1, 22) - 1;
 
         var xSlope = rnumber(1, 20) - 10;
         var zSlope = rnumber(1, 20) - 10;
