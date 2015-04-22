@@ -198,13 +198,15 @@ function drawPlanet(x, y, radius, color, starCoords, star, planet, starDist, pla
         var celestialSphereDist = getApproxCelestialSphereDist(planet, star);
         var planetShipRatio = 1+(100 / Math.abs(planetStarDist - starDist));
 
+        var scalar = 4;
+
         if(planetStarDist < starDist && planetDist < starDist) {
             // Planet closer to star than ship is (shadow on near side)
 
             // Determine shadow position
-            var xGradOffset = starVec.x * celestialSphereDist * planetShipRatio;
-            var yGradOffset = starVec.y * celestialSphereDist * planetShipRatio;
-            var gradRadius = Math.sqrt(sq(xGradOffset) + sq(yGradOffset));
+            var xGradOffset = starVec.x*celestialSphereDist*scalar*2;
+            var yGradOffset = starVec.y*celestialSphereDist*scalar*2;
+            var gradRadius = radius + Math.sqrt( sq(xGradOffset) + sq(yGradOffset) );
 
             // Fill clipping region with planet color
             DOM.prerender.ctx.beginPath();
@@ -221,7 +223,7 @@ function drawPlanet(x, y, radius, color, starCoords, star, planet, starDist, pla
                 gradRadius,
                 x - xGradOffset,
                 y - yGradOffset,
-                (gradRadius-0.01 < 0 ? 0 : gradRadius-0.01)
+                (gradRadius*0.6 < 0 ? 0 : gradRadius*0.6)
             );
 
             shading.addColorStop(0, color);
@@ -230,9 +232,9 @@ function drawPlanet(x, y, radius, color, starCoords, star, planet, starDist, pla
             // Ship closer to star than planet is (light on near side)
 
             // Determine shadow position
-            var xGradOffset = starVec.x * (2 - celestialSphereDist) * planetShipRatio;
-            var yGradOffset = starVec.y * (2 - celestialSphereDist) * planetShipRatio;
-            var gradRadius = Math.sqrt(sq(xGradOffset) + sq(yGradOffset));
+            var xGradOffset = starVec.x * (2 - celestialSphereDist) * scalar*2;
+            var yGradOffset = starVec.y * (2 - celestialSphereDist) * scalar*2;
+            var gradRadius = radius + Math.sqrt(sq(xGradOffset) + sq(yGradOffset));
 
             // Fill clipping region with shadow color
             DOM.prerender.ctx.beginPath();
@@ -249,7 +251,7 @@ function drawPlanet(x, y, radius, color, starCoords, star, planet, starDist, pla
                 gradRadius,
                 x + xGradOffset,
                 y + yGradOffset,
-                (gradRadius-0.01 < 0 ? 0 : gradRadius-0.01)
+                (gradRadius*0.6 < 0 ? 0 : gradRadius*0.6)
             );
 
             shading.addColorStop(0, '#000');
